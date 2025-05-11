@@ -1,0 +1,7 @@
+flask
+requests
+openai
+python-dotenv
+gspread
+oauth2client
+waitress
