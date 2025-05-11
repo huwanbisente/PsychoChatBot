@@ -1,5 +1,6 @@
 import os
 import gspread
+import json
 from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
 
@@ -7,7 +8,7 @@ load_dotenv()
 
 # Load config from environment
 GOOGLE_SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME", "ChatBotFAQ")
-GOOGLE_CREDENTIALS_FILE = os.getenv("GOOGLE_CREDENTIALS_FILE", "credentials.json")
+GOOGLE_CREDENTIALS_JSON = os.getenv("GOOGLE_CREDS")  # ✅ Load from env var
 
 def load_faq_from_sheet():
     """Loads the FAQ from a Google Sheet into a dictionary."""
@@ -16,7 +17,10 @@ def load_faq_from_sheet():
             'https://spreadsheets.google.com/feeds',
             'https://www.googleapis.com/auth/drive'
         ]
-        creds = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDENTIALS_FILE, scope)
+
+        # ✅ Load service account credentials from JSON string
+        creds_dict = json.loads(GOOGLE_CREDENTIALS_JSON)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
         client = gspread.authorize(creds)
 
         sheet = client.open(GOOGLE_SHEET_NAME).sheet1
