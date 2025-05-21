@@ -29,7 +29,11 @@ def load_faq_from_sheet():
         for row in records:
             question = row['Question'].strip().lower()
             answer = row['Answer'].strip()
-            faq_dict[question] = answer
+            response_type = row.get('Type', 'text').strip().lower()  # Default to text if missing
+            faq_dict[question] = {
+                'type': response_type,
+                'content': answer
+            }
 
         print(f"[DEBUG] Loaded {len(faq_dict)} FAQs from Google Sheet.")
         return faq_dict
@@ -47,7 +51,7 @@ def find_answer(user_input):
     if matches:
         matched_question = matches[0]
         print(f"[DEBUG] Fuzzy match found: '{matched_question}'")
-        return faq[matched_question]
+        return faq[matched_question]  # Now returns a dictionary with type + content
 
     print(f"[DEBUG] No match found for: '{user_input}'")
     return None
@@ -62,3 +66,16 @@ def get_all_questions(limit=5):
     except Exception as e:
         print(f"[ERROR] Failed to load questions: {e}")
         return []
+
+# --- Example Usage ---
+if __name__ == "__main__":
+    user_input = input("You: ")
+    response = find_answer(user_input)
+
+    if response:
+        if response['type'] == 'image':
+            print(f"[BOT IMAGE] {response['content']}")
+        else:
+            print(f"[BOT TEXT] {response['content']}")
+    else:
+        print("[BOT TEXT] Sorry, I don't know the answer to that.")

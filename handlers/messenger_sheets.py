@@ -44,7 +44,10 @@ def handle(request):
                         else:
                             reply = find_answer(user_input)
                             if reply:
-                                send_message(sender_id, reply)
+                                if reply['type'] == 'image':
+                                    send_image(sender_id, reply['content'])
+                                else:
+                                    send_message(sender_id, reply['content'])
                             else:
                                 questions = get_all_questions()
                                 quick_replies = [
@@ -87,6 +90,28 @@ def send_message(recipient_id, message_text):
     response = requests.post(url, headers=headers, params=params, json=payload)
     if response.status_code != 200:
         print(f"[ERROR] Failed to send message: {response.status_code} - {response.text}")
+
+def send_image(recipient_id, image_url):
+    url = "https://graph.facebook.com/v18.0/me/messages"
+    headers = { "Content-Type": "application/json" }
+    params = { "access_token": PAGE_ACCESS_TOKEN }
+    payload = {
+        "recipient": {"id": recipient_id},
+        "message": {
+            "attachment": {
+                "type": "image",
+                "payload": {
+                    "url": image_url,
+                    "is_reusable": True
+                }
+            }
+        }
+    }
+
+    print(f"[DEBUG] Sending image to {recipient_id}: {image_url}")
+    response = requests.post(url, headers=headers, params=params, json=payload)
+    if response.status_code != 200:
+        print(f"[ERROR] Failed to send image: {response.status_code} - {response.text}")
 
 def send_quick_replies(recipient_id, message_payload):
     url = "https://graph.facebook.com/v18.0/me/messages"
